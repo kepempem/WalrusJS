@@ -649,6 +649,7 @@ class Walrus {
 	{
 		return new Promise((resolve)=>{
 			this.setArticleTitle(a.Title);
+			this.setArticleContents("");
 			this.changeURL(s + "/" + a.Slug, a.Title);
 			this.setDirection(a.Direction);
 			fetch(this.getPageURL(a.File))

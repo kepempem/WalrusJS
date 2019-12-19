@@ -8,6 +8,11 @@
     text-decoration: underline;
 }
 
+html
+{
+    scroll-behavior: smooth;
+}
+
 #article
 {
     width:75%;
