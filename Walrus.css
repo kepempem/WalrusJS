@@ -1,0 +1,187 @@
+#reader h1,
+#reader h2,
+#reader h3,
+#reader h4,
+#reader h5,
+#reader h6
+{
+    text-decoration: underline;
+}
+
+#article
+{
+    width:75%;
+    top:0px;
+}
+
+table
+{
+    border-collapse:collapse;
+    border-spacing:0;
+}
+table td
+{
+    font-size:14px;
+    padding:10px 5px;
+    border-style:solid;
+    border-width:1px;
+    overflow:hidden;
+    word-break:normal;
+}
+table th
+{
+    font-size:14px;
+    font-weight:normal;
+    padding:10px 5px;
+    border-style:solid;
+    border-width:1px;
+    overflow:hidden;
+    word-break:normal;
+}
+.light table th, .light table td
+{
+    border-color: black;
+}
+.dark table th, .dark table td
+{
+    border-color: white;
+}
+
+#menu
+{
+    width: 160px;
+    position: absolute;
+    z-index: 1;
+    top: 0;
+    overflow-x: hidden;
+}
+
+.LTR #menu
+{
+    left: 20px;
+}
+
+.RTL #menu
+{
+    right: 20px;
+}
+
+#reader
+{
+    padding: 0px 10px;
+}
+
+.LTR #reader
+{
+    margin-left: 200px;
+}
+
+.RTL #reader
+{
+    margin-right: 200px;
+}
+
+a
+{
+    text-decoration: none;
+}
+
+a:hover
+{
+    text-decoration: underline;
+}
+
+.light a
+{
+    color: blue;
+}
+
+.dark a
+{
+    color:deeppink;
+}
+
+#toc .subsection
+{
+	position:relative;
+}
+
+.LTR .subsection
+{
+    left:20px;
+}
+
+.RTL .subsection
+{
+    right: 20px;
+}
+
+#toc *, .sm *
+{
+    background-color: transparent;
+}
+#toc .item, #toc .subsection, .sm .item {
+	display:block;
+}
+
+#toc .item .num, .sm .item .num
+{
+    font-weight: bold;
+}
+
+.LTR .num
+{
+    padding-right: 5px;
+}
+
+.RTL .num
+{
+    padding-left: 5px;
+}
+
+#toc, .sm
+{
+    margin-bottom: 10px;
+    padding:10px;
+    position: relative;
+    min-width: 50%;
+}
+
+.sm .subj_title
+{
+    font-size: 25px;
+    display: block;
+    font-weight: bold;
+}
+
+.sm .subj_title:hover
+{
+    cursor: pointer;
+}
+
+#light:hover, #dark:hover
+{
+    cursor: pointer;
+}
+
+.light *
+{
+    color: black;
+    background-color: white;
+}
+
+.dark *
+{
+    color: white;
+    background-color: black;
+}
+
+#menu h1:hover
+{
+    cursor:pointer;
+}
+
+.RTL, .RTL *
+{
+    direction: rtl;
+}
