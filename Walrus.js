@@ -3,6 +3,7 @@ class Walrus {
 	{
 		this.config = {};
 		this.Wrap = null;
+		this.mathEnabled = false;
 	}
 
 
@@ -138,14 +139,14 @@ class Walrus {
 	 */
 	parseURL(s)
 	{
-		let obj = {};
+		let obj = {
+			Section:"",
+			Article:"",
+			Subject:""
+		};
 		let section = s.match(/.+?(?=#)#(.*)/);
 		if(section != null){
 			obj.Section = section[1];
-		}
-		else
-		{
-			obj.Section = "";
 		}
 		let p = s.replace(/https?:\/\//, "");
 		p = p.replace("#"+obj.Section,"").substring(this.config.BaseURL.length).split("/").filter(w=>w.length>0);
@@ -234,7 +235,13 @@ class Walrus {
 	{
 		try
 		{
-			window.history.pushState(st, t, this.getPageURL(p));
+			let des = this.getPageURL(p);
+			let now = this.parseURL(window.location.href);
+			let desp = this.parseURL(des);
+			if(desp == null || now == null || desp.Subject != now.Subject || desp.Article != now.Article)
+			{
+				window.history.pushState(st, t, des);
+			}
 		}
 		catch(e)
 		{
@@ -262,42 +269,49 @@ class Walrus {
 	 */
 	setup()
 	{
-		let SIDE_MENU = document.createElement("div");
-		SIDE_MENU.id = "menu";
-		let TITLE_H1 = document.createElement("h1");
-		TITLE_H1.id = "site_title";
-		TITLE_H1.innerText = this.config.Title;
-		SIDE_MENU.appendChild(TITLE_H1);
-		let MODE_TOGGLE = document.createElement("h3");
-		let LIGHT_BTN = document.createElement("span");
-		LIGHT_BTN.id = "light";
-		LIGHT_BTN.innerText = "Light";
-		let MD_SPRTR = document.createTextNode(" | ");
-		let DARK_BTN = document.createElement("span");
-		DARK_BTN.id = "dark";
-		DARK_BTN.innerText = "Dark";
-		MODE_TOGGLE.appendChild(LIGHT_BTN);
-		MODE_TOGGLE.appendChild(MD_SPRTR);
-		MODE_TOGGLE.appendChild(DARK_BTN);
-		SIDE_MENU.appendChild(MODE_TOGGLE);
-		let READER = document.createElement("div");
-		READER.id = "reader";
-		let ARTCL_TTL = document.createElement("h1");
-		ARTCL_TTL.id = "title";
-		let ARTCL_TXT = document.createElement("div");
-		ARTCL_TXT.id = "article";
-		READER.appendChild(ARTCL_TTL);
-		READER.appendChild(ARTCL_TXT);
-		this.Wrap = document.createElement("span");
-		this.Wrap.id = "Walrus";
-		this.Wrap.appendChild(SIDE_MENU);
-		this.Wrap.appendChild(READER);
 
+		this.Wrap = Walrus.createHTMLElement(
+			"span",
+			{
+				props:{
+					id:"Walrus"
+				},
+				children:[
+					Walrus.createHTMLElement(
+						"div",
+						{
+							props:{
+								id:"menu"
+							},
+							children:[
+								Walrus.createHTMLElement("h1",{props:{id:"site_title",innerText:this.config.Title}}),
+								Walrus.createHTMLElement("h3",{
+									children:[
+										Walrus.createHTMLElement("span",{props:{id:"light",innerText:"Light"}}),
+										document.createTextNode(" | "),
+										Walrus.createHTMLElement("span",{props:{id:"dark",innerText:"Dark"}})
+									]
+								})
+							]
+						}
+					),
+					Walrus.createHTMLElement(
+						"div",
+						{
+							props:{
+								id:"reader"
+							},
+							children:[
+								Walrus.createHTMLElement("h1",{props:{id:"title"}}),
+								Walrus.createHTMLElement("div",{props:{id:"article"}})
+							]
+						}
+					)
+				]
+			}
+		);
 		document.body.appendChild(this.Wrap);
-
 		this.setDirection(this.config.Direction);
-
-
 		if(localStorage.getItem("display_mode") == null)
 		{
 			localStorage.setItem("display_mode", this.config.DefaultMode);
@@ -318,13 +332,25 @@ class Walrus {
 		});
 
 		this.generateMenu();
+		this.handleURL();
 
+		window.addEventListener("popstate",()=>{
+			this.handleURL();
+		});
+		
+	}
+
+	/**
+	 * @description Loads article or subject by current URL
+	 */
+	handleURL()
+	{
 		let what = this.parseURL(window.location.href);
 		if(what == null)
 		{
 			this.loadIndex();
 		}
-		else if(Object.prototype.hasOwnProperty.call(what,"Article"))
+		else if(what.Article.length>0)
 		{
 			let artic = this.getArticleBySubjectAndSlug(what.Subject,what.Article);
 			if(Object.prototype.hasOwnProperty.call(artic,"errorCode"))
@@ -336,7 +362,7 @@ class Walrus {
 				this.loadArticle(artic, what.Subject).then(()=>{
 					if(what.Section.length > 0)
 					{
-						this.moveToSection(what.Section);
+						Walrus.moveToSection(what.Section);
 					}
 				});
 			}
@@ -492,10 +518,24 @@ class Walrus {
 	 */
 	loadMathJAX()
 	{
-		var script = document.createElement("script");
-		script.src = "https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js";
-		script.async = true;
-		document.head.appendChild(script);
+		if(!this.mathEnabled)
+		{
+			var script = document.createElement("script");
+			script.src = "https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js";
+			script.async = true;
+			document.head.appendChild(script);
+			this.mathEnabled = true;
+		}
+		else
+		{
+			try{
+				MathJax.typeset();
+			}
+			catch(e)
+			{
+				console.log(e);
+			}
+		}
 	}
 
 
@@ -512,7 +552,7 @@ class Walrus {
 		let workingOn = 0;
 		while(workingOn < ss.length)
 		{
-			if(ss[workingOn].level == 2)
+			if(ss[workingOn].level <= 2)
 			{
 				numbering++;
 				toc.appendChild(this.createTOCItem(ss[workingOn].title,numbering,"#"+ss[workingOn].title.replace(/ /g,"-").replace(/\?/g,"")));
