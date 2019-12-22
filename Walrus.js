@@ -1,9 +1,11 @@
+window.MathJax = {};
 class Walrus {
 	constructor()
 	{
 		this.config = {};
 		this.Wrap = null;
 		this.mathEnabled = false;
+		this.current = null;
 	}
 
 
@@ -98,7 +100,13 @@ class Walrus {
 			DefaultMode:Walrus.getProp("DefaultMode","dark",conf).toLowerCase(),
 			Protocol:Walrus.getProp("Protocol","http",conf).toLowerCase(),
 			Reload:Walrus.getProp("Reload", false, conf),
-			Subjects:[]
+			Subjects:[],
+			MathJaxConfig:Walrus.getProp("MathJaxConfig",{
+				tex: {
+					inlineMath: [["$", "$"], ["\\(", "\\)"]],
+					tags: "ams"
+				}
+			}, conf)
 		};
 		for(let i = 0; i < conf.Subjects.length; i++)
 		{
@@ -224,6 +232,20 @@ class Walrus {
 		}
 	}
 
+	hasPathChanged(url1, url2)
+	{
+		let p1 = this.parseURL(url1);
+		let p2 = this.parseURL(url2);
+		if(p1 == null && p2 == null)
+		{
+			return false;
+		}
+		if(p1 == null || p2 == null)
+		{
+			return true;
+		}
+		return p1.Subject != p2.Subject || p1.Article != p2.Article;
+	}
 
 	/**
 	 * 
@@ -236,9 +258,7 @@ class Walrus {
 		try
 		{
 			let des = this.getPageURL(p);
-			let now = this.parseURL(window.location.href);
-			let desp = this.parseURL(des);
-			if(desp == null || now == null || desp.Subject != now.Subject || desp.Article != now.Article)
+			if(this.hasPathChanged(des, window.location.href))
 			{
 				window.history.pushState(st, t, des);
 			}
@@ -346,9 +366,15 @@ class Walrus {
 	handleURL()
 	{
 		let what = this.parseURL(window.location.href);
+		let prev = this.current;
+		this.current = what;
 		if(what == null)
 		{
 			this.loadIndex();
+		}
+		else if(prev != null && what.Subject == prev.Subject && what.Article == prev.Article)
+		{
+			return;
 		}
 		else if(what.Article.length>0)
 		{
@@ -520,8 +546,9 @@ class Walrus {
 	{
 		if(!this.mathEnabled)
 		{
+			window.MathJax = this.config.MathJaxConfig;
 			var script = document.createElement("script");
-			script.src = "https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js";
+			script.src = "https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js";
 			script.async = true;
 			document.head.appendChild(script);
 			this.mathEnabled = true;
@@ -676,6 +703,7 @@ class Walrus {
 	trigger404()
 	{
 		this.setArticleTitle("404 Not Found");
+		this.setDirection(this.config.Direction);
 	}
 
 
@@ -754,6 +782,7 @@ class Walrus {
 	{
 		this.setArticleTitle(s.Title);
 		this.changeURL(s.Slug, s.Title);
+		this.setDirection(s.Direction);
 		this.setArticleContents(this.createSubjectMenu(s, false));
 	}
 
@@ -765,6 +794,7 @@ class Walrus {
 	{
 		this.setArticleTitle("");
 		this.changeURL("", this.config.Title);
+		this.setDirection(this.config.Direction);
 		let lists = document.createElement("div");
 		for(let i = 0; i < this.config.Subjects.length; i++)
 		{
