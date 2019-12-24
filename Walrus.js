@@ -173,6 +173,15 @@ class Walrus {
 		return obj;
 	}
 
+	static HTMLEntitiesEncode(w)
+	{
+		return w
+			.replace(/&/g, "&amp;")
+			.replace(/</g, "&lt;")
+			.replace(/>/g, "&gt;")
+			.replace(/"/g, "&quot;");
+	}
+
 
 	/**
 	 * 
@@ -214,7 +223,13 @@ class Walrus {
 					">"+
 					subsection+
 					"</h"+level+"></a>";
-		}),subsections];
+		})
+			.replace(/```(.+?)?```/gms, (full, code)=>{
+				return "<pre class=\"code\">"+Walrus.HTMLEntitiesEncode(code)+"</pre>";
+			})
+			.replace(/`(.+?)?`/g,(full, code)=>{
+				return "<code class=\"inline-code\">"+Walrus.HTMLEntitiesEncode(code)+"</code>";
+			}), subsections];
 	}
 
 
@@ -556,6 +571,7 @@ class Walrus {
 		else
 		{
 			try{
+				MathJax.typesetClear();
 				MathJax.typeset();
 			}
 			catch(e)
