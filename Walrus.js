@@ -106,7 +106,8 @@ class Walrus {
 					inlineMath: [["$", "$"], ["\\(", "\\)"]],
 					tags: "ams"
 				}
-			}, conf)
+			}, conf),
+			MathJaxComponent:Walrus.getProp("MathJaxComponent", "tex-svg", conf)
 		};
 		for(let i = 0; i < conf.Subjects.length; i++)
 		{
@@ -563,7 +564,7 @@ class Walrus {
 		{
 			window.MathJax = this.config.MathJaxConfig;
 			var script = document.createElement("script");
-			script.src = "https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js";
+			script.src = "https://cdn.jsdelivr.net/npm/mathjax@3/es5/"+this.config.MathJaxComponent+".js";
 			script.async = true;
 			document.head.appendChild(script);
 			this.mathEnabled = true;
@@ -572,6 +573,7 @@ class Walrus {
 		{
 			try{
 				MathJax.typesetClear();
+				MathJax.texReset();
 				MathJax.typeset();
 			}
 			catch(e)
