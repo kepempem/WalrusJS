@@ -782,6 +782,7 @@ class Walrus {
 			if(!this.config.Reload)
 			{
 				el.getElementsByTagName("a")[0].addEventListener("click",()=>{
+					this.current = {Article:s.Articles[i].Slug, Subject:s.Slug, Section:""};
 					this.loadArticle(this.getArticleBySubjectAndSlug(s.Slug, s.Articles[i].Slug),s.Slug);
 				});
 			}
