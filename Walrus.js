@@ -230,6 +230,9 @@ class Walrus {
 			})
 			.replace(/`(.+?)?`/g,(full, code)=>{
 				return "<code class=\"inline-code\">"+Walrus.HTMLEntitiesEncode(code)+"</code>";
+			})
+			.replace(/ref\[(.*?)\]\((.*?)\)/g, (full, text, path)=>{
+				return "<a href=\"javascript:void(0)\" class=\"insiteref\" data-ref=\""+path+"\">"+text+"</a>";
 			}), subsections];
 	}
 
@@ -243,6 +246,7 @@ class Walrus {
 	{
 		try{
 			document.getElementsByName(s)[0].scrollIntoView();
+			window.location.hash = s;
 		}catch(err){
 			console.log(err);
 		}
@@ -456,7 +460,7 @@ class Walrus {
 	loadConfigFromFile(f)
 	{
 		return new Promise((resolve)=>{
-			fetch(f)
+			fetch(f+"?v="+(new Date()).getTime().toString())
 				.then(resp => resp.json())
 				.then(jsonData => this.loadConfig(jsonData))
 				.then(()=>resolve());
@@ -738,13 +742,14 @@ class Walrus {
 			this.setArticleContents("");
 			this.changeURL(s + "/" + a.Slug, a.Title);
 			this.setDirection(a.Direction);
-			fetch(this.getPageURL(a.File))
+			fetch(this.getPageURL(a.File)+"?v="+(new Date()).getTime().toString())
 				.then(resp => resp.text())
 				.then(resp=>{
 					let afterText = Walrus.handleText(resp, a.Title);
 					this.setArticleContents(
 						this.toTableOfContents(afterText[1]).outerHTML+afterText[0]
 					);
+					this.handleInSiteRefs();
 					if(a.Math)
 					{
 						this.loadMathJAX();
@@ -752,6 +757,61 @@ class Walrus {
 					resolve();
 				});
 		});
+	}
+
+	
+	handleInSiteRefs()
+	{
+		let links = document.getElementsByClassName("insiteref");
+		for(let i = 0; i < links.length; i++)
+		{
+			let fullref = links[i].getAttribute("data-ref");
+			if(fullref.charAt(0)=="#")
+			{
+				fullref = fullref.substring(1);
+				links[i].addEventListener("click",()=>{
+					this.current.Section = fullref;
+					Walrus.moveToSection(fullref);
+				});
+			}
+			else
+			{
+				fullref = links[i].getAttribute("data-ref").split("/").filter(s=>s.length>0);
+				let art = "";
+				let sec = "";
+				if(fullref.length>1)
+				{
+					let spl = fullref[1].split("#");
+					art = spl[0];
+					if(spl.length>1)
+					{
+						sec = spl[1];
+					}
+				}
+				let refcur = {
+					Subject:fullref.length>0?fullref[0]:"",
+					Article:art,
+					Section:sec
+				};
+				links[i].addEventListener("click",()=>{
+					this.current = refcur;
+					if(refcur.Article.length>0)
+					{
+						this.loadArticle(this.getArticleBySubjectAndSlug(refcur.Subject, refcur.Article),refcur.Subject)
+							.then(()=>{
+								if(refcur.Section.length>0)
+								{
+									Walrus.moveToSection(refcur.Section);
+								}
+							});
+					}
+					else if(refcur.Subject.length>0)
+					{
+						this.loadSubject(this.getSubjectBySlug(refcur.Subject));
+					}
+				});
+			}
+		}
 	}
 
 
