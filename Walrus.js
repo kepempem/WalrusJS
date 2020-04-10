@@ -604,7 +604,7 @@ class Walrus {
 			if(ss[workingOn].level <= 2)
 			{
 				numbering++;
-				toc.appendChild(this.createTOCItem(ss[workingOn].title,numbering,"#"+ss[workingOn].title.replace(/ /g,"-").replace(/\?/g,"")));
+				toc.appendChild(this.createTOCItem(ss[workingOn].title,numbering,"#"+encodeURIComponent(ss[workingOn].title.replace(/ /g,"-").replace(/\?/g,""))));
 				workingOn++;
 			}
 			else if(ss[workingOn].level >= 3)
