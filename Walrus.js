@@ -684,7 +684,7 @@ class Walrus {
 	 */
 	generateMenu()
 	{
-		let list = document.createElement("ol");
+		let list = document.createElement("ul");
 		for(let i = 0; i < this.config.Subjects.length; i++)
 		{
 			let el = document.createElement("li");
