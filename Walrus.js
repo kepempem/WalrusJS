@@ -637,7 +637,7 @@ class Walrus {
 			if(ss[currentIndex].level == startingLevel)
 			{
 				insideNumbering++;
-				subTOC.appendChild(this.createTOCItem(ss[currentIndex].title, num + "." + insideNumbering, "#"+ss[currentIndex].title.replace(/ /g,"-").replace(/\?/g,"")));
+				subTOC.appendChild(this.createTOCItem(ss[currentIndex].title, num + "." + insideNumbering, "#"+encodeURIComponent(ss[currentIndex].title.replace(/ /g,"-").replace(/\?/g,""))));
 				currentIndex++;
 			}
 			else
